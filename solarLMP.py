@@ -3,10 +3,10 @@ from datetime import datetime
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
 
-largeCity = ['Los Angeles', 'San Diego', 'San Jose', 'San Francisco', 'Fresno', 'Long Beach', 'Sacramento', 'Oakland', 'Santa Ana', 'Anaheim']
-
-folderName = r'C:\Users\212300489\Google Drive\Personal\Data\Q\Code'
+#folderName = r'C:\Users\212300489\Google Drive\Personal\Data\Q\Code'
+folderName = r'.'
 zipcodeFileName = r'\US Zip Codes from 2013 Government Data.csv'
 openPVFileName = r'\openpv-export-201510311549.csv'
 
@@ -87,12 +87,35 @@ mlmpGroup = min(lmpGroupA[:,0])
 MlmpGroup = max(lmpGroupA[:,0])
 lmpGroupSize = 1 + 200*(lmpGroupA[:,0]-mlmpGroup)/(MlmpGroup-mlmpGroup)
 fig, ax = plt.subplots(1,1)
-ax.scatter(lmpGroupA[:,1], lmpGroupA[:,2], s=lmpGroupSize, alpha = 0.5, lw = 1, color='b', edgecolors='k')	# facecolor='0.5',
-ax.scatter(pvGroupA[:,1], pvGroupA[:,2], s=pvGroupSize, alpha = 0.5, lw = 1, color='r', edgecolors='k')	# facecolor='0.5',
-plt.title('Solar Capacity and Locational Marginal Prices in California')
-plt.xlabel('Latitude')
-plt.ylabel('Longitude')
+ax.scatter(lmpGroupA[:,2], lmpGroupA[:,1], s=lmpGroupSize, alpha = 0.5, lw = 1, color='b', edgecolors='k')	# facecolor='0.5',
+ax.scatter(pvGroupA[:,2], pvGroupA[:,1], s=pvGroupSize, alpha = 0.5, lw = 1, color='r', edgecolors='k')	# facecolor='0.5',
+#plt.title('Solar Capacity and Locational Marginal Prices in California')
+plt.ylabel('Latitude [deg]')
+plt.xlabel('Longitude [deg]')
+plt.figtext(0.34, 0.92, "Solar Capacity", fontsize='large', color='r', ha ='right')
+plt.figtext(0.39, 0.92, "Locational Marginal Prices", fontsize='large', color='b', ha ='left')
+plt.figtext(0.36, 0.92, ' vs ', fontsize='large', color='k', ha ='center')
+plt.figtext(0.80, 0.92, "in California", fontsize='large', color='k', ha ='center')
+
+largeCity = ['LA', 'SD', 'SF', 'FR', 'SC']
+#, 'San Jose', 'Fresno', 'Long Beach', 'Sacramento', 'Oakland', 'Santa Ana', 'Anaheim']
+largeCityLAT = [34.052233, 32.715328, 37.774931, 36.746842, 38.581572]
+largeCityLNG = [-118.243686, -117.157256, -122.419417, -119.772586, -121.494400]
+plt.figtext(0.29, 0.53, "SF", fontsize='large', color='g', ha ='center')
+plt.figtext(0.59, 0.11, "SD", fontsize='large', color='g', ha ='center')
+plt.figtext(0.54, 0.46, "FR", fontsize='large', color='g', ha ='center')
+plt.figtext(0.54, 0.20, "LA", fontsize='large', color='g', ha ='center')
+plt.figtext(0.45, 0.64, "SC", fontsize='large', color='g', ha ='center')
+ax.scatter(largeCityLNG, largeCityLAT, s=30, alpha = 1, lw = 1, color='g', edgecolors='g')	# facecolor='0.5',
+plt.ylim([32,42])
 fig.show()
+
+pp = PdfPages(folderName + caisoFileName.split('.')[0] + '.pdf')
+plt.tight_layout() # for full page bounding box
+#fig.savefig(folderName + "\\" + loadFileName.split('.')[0] + '.pdf', orientation='portrait', format='pdf')
+plt.savefig(pp, format='pdf')
+
+pp.close()
 
 # lmpDistA = np.ones(len(byGroup))*sys.float_info.max
 # lmpIndA = np.zeros(len(byGroup),dtype=np.uint16)
