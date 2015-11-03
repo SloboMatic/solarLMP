@@ -6,13 +6,18 @@ This project will focus on the relationship between distributed solar generation
 
 For the challenge question we conducted a simple analysis on a rather small sample of available data. We considered electricity prices just for a single day and only for solar installations in California. In this effort a part of the challenge was matching each installation to the corresponding or closest available LMP zone. Namely, the zonal LMP data published by CAISO does not contain a location but only a cryptic code for each zone. Other web resources had to be used to perform the matching.
 
-Figure 1 shows distributions of solar installations and LMP prices across the state of California. The size of installed solar power (in kW) is denoted with the radius of red circles, whereas the price (in $/MWh) is denoted with the radius of blue circles. The green circles represent five largest cities in California. The figure shows that zones with higher LMP values are located along urban areas. Ignoring solar, this can be explained by the fact that in urban areas power transmission is more congested which requires higher electricity prices. However, figure also shows that the urban areas also have higher concentrations of solar installations. Since distributed installations reduce congestion, we might expect that this would have impact on LMP price reduction. 
+Figure 1 shows distributions of solar installations and LMP prices across the state of California. The size of installed solar power (in kW) is denoted with the radius of red circles, whereas the price (in $/MWh) is denoted with the radius of blue circles. The green circles represent five largest cities in California. The figure shows that zones with higher LMP values are located along urban areas. Ignoring solar, this can be explained by the fact that in urban areas power transmission is more congested which demands higher electricity prices. However, figure also shows that the urban areas also have higher concentrations of solar installations. Since distributed installations reduce congestion, we might expect that this would have impact on LMP price reduction. 
 
-To investigate this further we computed the distribution of installed solar power over the range of LMP values. This plot is shown in the upper portion of Figure 2. It shows that zones with higher paying LMPs also produce more total solar power. In particular, as shown in the bottom subplot, q-th percentile of highest LMP zones have approximately q-th percentile of total solar capacity. In conclusion, this exercise contributes to other analyses stating that so far solar installations had little effect on local electricity prices.  
+To investigate this further we computed the distribution of installed solar power over the range of LMP values. This plot is shown in the upper portion of Figure 2. The dark green curve shows that zones with higher paying LMPs also produce more total solar power. In addition, as shown with the red curve in the bottom subplot, q-th percentile of highest LMP zones have approximately q-th percentile of total solar capacity. In conclusion, this exercise contributes to other analyses stating that so far solar installations had little effect on local electricity prices.  
 
 [1] U.S. Solar Market Insight 2015, GTM Research, July 2015.
+
 [2] http://www3.dps.ny.gov/W/PSCWeb.nsf/All/CC4F2EFA3A23551585257DEA007DCFE2?OpenDocument
+
 [3] http://www.cpuc.ca.gov/PUC/energy/drp/
+
 [4] http://oasis.caiso.com/mrioasis/logon.do
+
 [5] https://openpv.nrel.gov/ 
+
 [6] http://developer.nrel.gov/docs/solar/openpv/ 
