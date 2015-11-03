@@ -62,7 +62,7 @@ lmpGroupA[(lmpGroupAux[:,1]<30) | (lmpGroupAux[:,1]>42),2] = np.mean(lmpGroupAux
 lmpGroupA[lmpGroupAux[:,2]>-110,2] = np.mean(lmpGroupAux[:,2])
 lmpGroupA[lmpGroupAux[:,2]>-110,1] = np.mean(lmpGroupAux[:,1])
 
-numBins = 100.0
+numBins = 200.0
 totPVBin = np.zeros(numBins)
 mlmp = lmpGroupA[:,0].min()
 Mlmp = lmpGroupA[:,0].max()
@@ -81,11 +81,16 @@ for pv in range(len(byGroup)):
 		totPVBin[math.floor((lmpGroupA[lmpIndA[pv],0]-mlmp)/dlmp)] += pvGroupA[pv,0]
 
 stepPVBin = np.zeros((2*numBins+1,2))
+cumulativePV = np.zeros(numBins)
 for i in range(int(numBins)):
 	stepPVBin[2*i,0] = mlmp+i*dlmp
 	stepPVBin[2*i,1] = totPVBin[i]
 	stepPVBin[2*i+1,0] = mlmp+(i+1)*dlmp
 	stepPVBin[2*i+1,1] = totPVBin[i]
+	if i==0:
+		cumulativePV[i] = totPVBin[i] 
+	else:
+		cumulativePV[i] = cumulativePV[i-1]+totPVBin[i] 
 stepPVBin[2*numBins,0] = mlmp+numBins*dlmp
 stepPVBin[2*numBins,1] = 0.0
 
@@ -99,16 +104,21 @@ for pv in range(len(byGroup)):
 ax[0].set_title('Installed Solar had no Impact on Locational Marginal Prices',color='r')
 ax[0].set_xlabel('LMP [$/MWh]')
 ax[0].set_ylabel('Solar Capacity [kW]')
-ax[0].set_ylim([0,255000])
+ax[0].set_xlim([mlmp,Mlmp])
+ax[0].set_ylim([0,max(totPVBin)])
 ax[0].plot(stepPVBin[:,0], stepPVBin[:,1], color='DarkGreen', label='total')
 ax[0].legend()
 fig.show()
 
-pvPerc = np.zeros((101))
+numPerc = numBins
+pvTotal = sum(pvGroupA[:,0])
+numTotal = float(len(pvGroupA[:,0]))
+pvPerc = np.zeros((numPerc + 1))
 #lmpMed = np.median(lmpGroupA[:,0])
-for Percentile in range(101):
-	lmpPercentile = np.percentile(lmpGroupA[lmpIndA[:],0],100-Percentile)
-	lmpPercentileInv = np.percentile(lmpGroupA[lmpIndA[:],0],Percentile)
+for Percentile in range(int(numPerc) + 1):
+	lmpPercentile = np.percentile(lmpGroupA[lmpIndA[:],0],100-Percentile*100/numPerc)
+	#lmpPercentile = Mlmp - Percentile*dlmp
+	lmpPercentileInv = np.percentile(lmpGroupA[lmpIndA[:],0],Percentile*100/numPerc)
 	pvLmpHigh, pvLmpLow = 0, 0
 	pvLmpHighInv, pvLmpLowInv = 0, 0
 	numLmpHigh, numLmpLow = 0.0, 0.0
@@ -126,20 +136,19 @@ for Percentile in range(101):
 		else:
 			pvLmpLowInv += pvGroupA[pv,0]
 			numLmpLowInv += 1
-	pvTotal = sum(pvGroupA[:,0])
-	numTotal = float(len(pvGroupA[:,0]))
 	pvPerc[Percentile] = pvLmpHigh/pvTotal*100.0 
 # print(pvLmpHigh/pvTotal, pvLmpLow/pvTotal)
 # print(numLmpHigh/numTotal, numLmpLow/numTotal)
 # print(pvLmpHighInv/pvTotal, pvLmpLowInv/pvTotal)
 # print(numLmpHighInv/numTotal, numLmpLowInv/numTotal)
 #fig, ax = plt.subplots(1,1)
-ax[1].scatter(range(101), pvPerc, s=2, color='m')
-#plt.title('Solar Capacity vs. Locational Marginal Prices in California')
+ax[1].scatter(np.arange(0,100,100/numBins), cumulativePV/pvTotal*100.0, s=2, color='DarkGreen', label='cumulative')
+ax[1].scatter(np.arange(0,100+1/numPerc,100/numPerc), pvPerc, s=2, color='r', label='percentile')
 ax[1].set_xlabel('Percentile LMP')
 ax[1].set_ylabel('Percentile Solar Capacity')
 ax[1].set_xlim([0,100])
-ax[1].set_ylim([0,100])
+ax[1].set_ylim([-2,102])
+ax[1].legend(loc = 'lower right')
 fig.show()
 
 pp = PdfPages(folderName + caisoFileName.split('.')[0] + '.pdf')
