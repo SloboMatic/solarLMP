@@ -5,6 +5,7 @@
 import pandas as pd
 from datetime import datetime
 import sys
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -61,6 +62,11 @@ lmpGroupA[(lmpGroupAux[:,1]<30) | (lmpGroupAux[:,1]>42),2] = np.mean(lmpGroupAux
 lmpGroupA[lmpGroupAux[:,2]>-110,2] = np.mean(lmpGroupAux[:,2])
 lmpGroupA[lmpGroupAux[:,2]>-110,1] = np.mean(lmpGroupAux[:,1])
 
+numBins = 100.0
+totPVBin = np.zeros(numBins)
+mlmp = lmpGroupA[:,0].min()
+Mlmp = lmpGroupA[:,0].max()
+dlmp = (Mlmp-mlmp)/numBins
 lmpDistA = np.ones(len(byGroup))*sys.float_info.max
 lmpIndA = np.zeros(len(byGroup),dtype=np.uint16)
 for pv in range(len(byGroup)):
@@ -69,15 +75,33 @@ for pv in range(len(byGroup)):
 		if dist < lmpDistA[pv]:
 			lmpDistA[pv] = dist
 			lmpIndA[pv] = lmp
+	if lmpGroupA[lmpIndA[pv],0] == Mlmp:
+		totPVBin[numBins-1] += pvGroupA[pv,0]
+	else:
+		totPVBin[math.floor((lmpGroupA[lmpIndA[pv],0]-mlmp)/dlmp)] += pvGroupA[pv,0]
+
+stepPVBin = np.zeros((2*numBins+1,2))
+for i in range(int(numBins)):
+	stepPVBin[2*i,0] = mlmp+i*dlmp
+	stepPVBin[2*i,1] = totPVBin[i]
+	stepPVBin[2*i+1,0] = mlmp+(i+1)*dlmp
+	stepPVBin[2*i+1,1] = totPVBin[i]
+stepPVBin[2*numBins,0] = mlmp+numBins*dlmp
+stepPVBin[2*numBins,1] = 0.0
 
 #fig, ax = plt.subplots(1,1)
 fig, ax = plt.subplots(2, sharex=False)
 for pv in range(len(byGroup)):
-	ax[0].scatter(lmpGroupA[lmpIndA[pv],0], pvGroupA[pv,0], s=2, color='g')
+	if pv == 0:
+		ax[0].scatter(lmpGroupA[lmpIndA[pv],0], pvGroupA[pv,0], s=2, color='LightGreen', label='site')
+	else:
+		ax[0].scatter(lmpGroupA[lmpIndA[pv],0], pvGroupA[pv,0], s=2, color='LightGreen')
 ax[0].set_title('Installed Solar had no Impact on Locational Marginal Prices',color='r')
 ax[0].set_xlabel('LMP [$/MWh]')
 ax[0].set_ylabel('Solar Capacity [kW]')
-ax[0].set_ylim([0,60000])
+ax[0].set_ylim([0,255000])
+ax[0].plot(stepPVBin[:,0], stepPVBin[:,1], color='DarkGreen', label='total')
+ax[0].legend()
 fig.show()
 
 pvPerc = np.zeros((101))
