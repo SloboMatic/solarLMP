@@ -1,6 +1,6 @@
 ## The Value of Solar
 
-* Figures deployed on Heroku as Python apps: *
+**_Figures deployed on Heroku as Python apps:_**
 
 http://lmpsolarvalue.herokuapp.com/
 
