@@ -10,6 +10,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
+from urllib2 import Request, urlopen
+import json
+
 folderName = r'.'
 zipcodeFileName = r'\US Zip Codes from 2013 Government Data.csv'
 openPVFileName = r'\openpv-export-201510311549.csv'
@@ -17,9 +20,18 @@ openPVFileName = r'\openpv-export-201510311549.csv'
 zipcodeDF = pd.read_csv(folderName+zipcodeFileName)
 zipcodeDF.columns = ['zipcode', 'lat', 'lng']
 
-openPVDF = pd.read_csv(folderName+openPVFileName, index_col=False) # _not_ use the first column as the index
-openPVDF.columns = ['zipcode', 'state', 'size', 'cost', 'date', 'filterx']
-openPVDF.date = openPVDF.date.apply(lambda d: datetime.strptime(d, "%m/%d/%Y"))
+request=Request('http://developer.nrel.gov//api/solar/open_pv/installs/index?api_key=8Sk1IvuL0Nb5Yucz937sXCE7bWugUgZmL4pNneIk&state=CA&nppage=5000')
+response = urlopen(request)	# instance
+infoDataStr = response.read()	# str
+infoData = json.loads(infoDataStr)	# dict, infoData['result'] - list
+openPVDF = pd.DataFrame(infoData['result']) # df
+openPVDF.columns = ['id', 'cost', 'date', 'size', 'state', 'zipcode']
+openPVDF.zipcode = openPVDF.zipcode.apply(lambda d: int(d))
+
+# openPVDF = pd.read_csv(folderName+openPVFileName, index_col=False) # _not_ use the first column as the index
+# openPVDF.columns = ['zipcode', 'state', 'size', 'cost', 'date', 'filterx']
+
+#openPVDF.date = openPVDF.date.apply(lambda d: datetime.strptime(d, "%m/%d/%Y"))
 #empty = openPVDF.apply(lambda col: pd.isnull(col))
 #openPVDF.index = openPVDF.date
 
@@ -94,19 +106,20 @@ for i in range(int(numBins)):
 stepPVBin[2*numBins,0] = mlmp+numBins*dlmp
 stepPVBin[2*numBins,1] = 0.0
 
+scale = 1000.0
 #fig, ax = plt.subplots(1,1)
 fig, ax = plt.subplots(2, sharex=False)
 for pv in range(len(byGroup)):
 	if pv == 0:
-		ax[0].scatter(lmpGroupA[lmpIndA[pv],0], pvGroupA[pv,0], s=2, color='LightGreen', label='site')
+		ax[0].scatter(lmpGroupA[lmpIndA[pv],0], pvGroupA[pv,0]/scale, s=2, color='LightGreen', label='site')
 	else:
-		ax[0].scatter(lmpGroupA[lmpIndA[pv],0], pvGroupA[pv,0], s=2, color='LightGreen')
+		ax[0].scatter(lmpGroupA[lmpIndA[pv],0], pvGroupA[pv,0]/scale, s=2, color='LightGreen')
 ax[0].set_title('Installed Solar had no Impact on Locational Marginal Prices',color='r')
 ax[0].set_xlabel('LMP [$/MWh]')
-ax[0].set_ylabel('Solar Capacity [kW]')
+ax[0].set_ylabel('Solar Capacity [MW]')
 ax[0].set_xlim([mlmp,Mlmp])
-ax[0].set_ylim([0,max(totPVBin)])
-ax[0].plot(stepPVBin[:,0], stepPVBin[:,1], color='DarkGreen', label='total')
+ax[0].set_ylim([0,max(totPVBin)/scale])
+ax[0].plot(stepPVBin[:,0], stepPVBin[:,1]/scale, color='DarkGreen', label='total')
 ax[0].legend()
 fig.show()
 
