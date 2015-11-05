@@ -9,6 +9,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
+from urllib2 import Request, urlopen
+import json
+
 folderName = r'.'
 zipcodeFileName = r'\US Zip Codes from 2013 Government Data.csv'
 openPVFileName = r'\openpv-export-201510311549.csv'
@@ -16,11 +19,19 @@ openPVFileName = r'\openpv-export-201510311549.csv'
 zipcodeDF = pd.read_csv(folderName+zipcodeFileName)
 zipcodeDF.columns = ['zipcode', 'lat', 'lng']
 
-openPVDF = pd.read_csv(folderName+openPVFileName, index_col=False) # _not_ use the first column as the index
-openPVDF.columns = ['zipcode', 'state', 'size', 'cost', 'date', 'filterx']
-openPVDF.date = openPVDF.date.apply(lambda d: datetime.strptime(d, "%m/%d/%Y"))
-#empty = openPVDF.apply(lambda col: pd.isnull(col))
-#openPVDF.index = openPVDF.date
+request=Request('http://developer.nrel.gov//api/solar/open_pv/installs/index?api_key=8Sk1IvuL0Nb5Yucz937sXCE7bWugUgZmL4pNneIk&state=CA&nppage=5000')
+response = urlopen(request)	# instance
+infoDataStr = response.read()	# str
+infoData = json.loads(infoDataStr)	# dict, infoData['result'] - list
+openPVDF = pd.DataFrame(infoData['result']) # df
+openPVDF.columns = ['id', 'cost', 'date', 'size', 'state', 'zipcode']
+openPVDF.zipcode = openPVDF.zipcode.apply(lambda d: int(d))
+
+# openPVDF = pd.read_csv(folderName+openPVFileName, index_col=False) # _not_ use the first column as the index
+# openPVDF.columns = ['zipcode', 'state', 'size', 'cost', 'date', 'filterx']
+# openPVDF.date = openPVDF.date.apply(lambda d: datetime.strptime(d, "%m/%d/%Y"))
+# empty = openPVDF.apply(lambda col: pd.isnull(col))
+# openPVDF.index = openPVDF.date
 
 pvLocDF = pd.merge(openPVDF, zipcodeDF, on='zipcode', how='inner')
 
